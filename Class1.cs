@@ -8,22 +8,22 @@
 //    {
 //        public enum TokenType
 //        {
-//            UnsignedInt = 1,         // Целое без знака
-//            SignedInt = 3,            // Целое со знаком
-//            Identifier = 2,          // Идентификатор
-//            Keyword = 14,            // Ключевое слово
-//            Separator = 11,          // Разделитель (пробел)
-//            AssignmentOperator = 10, // Оператор присваивания
-//            EndOfStatement = 16,     // Конец оператора
-//            TypeKeyword = 17,        // Ключевое слово типа
-//            StructKeyword = 18,      // Ключевое слово struct
-//            OpenBrace = 19,          // Открывающая фигурная скобка
-//            CloseBrace = 20,         // Закрывающая фигурная скобка
-//            DollarSign = 21,         // Знак доллара
-//            StringLiteral = 22,      // Строковый литерал
-//            PlusOperator = 23,       // Оператор +
-//            MinusOperator = 24,      // Оператор -
-//            InvalidChar = 99         // Недопустимый символ
+//            UnsignedInt = 1,
+//            SignedInt = 3,
+//            Identifier = 2,
+//            Keyword = 14,
+//            Separator = 11,
+//            AssignmentOperator = 10,
+//            EndOfStatement = 16,
+//            TypeKeyword = 17,
+//            StructKeyword = 18,
+//            OpenBrace = 19,
+//            CloseBrace = 20,
+//            DollarSign = 21,
+//            StringLiteral = 22,
+//            PlusOperator = 23,
+//            MinusOperator = 24,
+//            InvalidChar = 99
 //        }
 
 //        public class Token
@@ -55,7 +55,8 @@
 //            {"string", TokenType.TypeKeyword},
 //            {"int", TokenType.TypeKeyword},
 //            {"bool", TokenType.TypeKeyword},
-//            {"float", TokenType.TypeKeyword}
+//            {"float", TokenType.TypeKeyword},
+//            {"double", TokenType.TypeKeyword}
 //        };
 
 //        public List<Token> Analyze(string input)
@@ -63,30 +64,22 @@
 //            List<Token> tokens = new List<Token>();
 //            int currentPos = 0;
 //            int lineNumber = 1;
+//            bool expectIdentifier = false; // Флаг ожидания идентификатора после ключевого слова
 
 //            while (currentPos < input.Length)
 //            {
 //                char currentChar = input[currentPos];
 
-//                // Пропускаем пробелы и переносы строк
 //                if (char.IsWhiteSpace(currentChar))
 //                {
 //                    if (currentChar == '\n')
 //                    {
 //                        lineNumber++;
 //                    }
-//                    tokens.Add(new Token(
-//                        (int)TokenType.Separator,
-//                        "разделитель",
-//                        currentChar.ToString(),
-//                        currentPos + 1,
-//                        currentPos + 1
-//                    ));
 //                    currentPos++;
 //                    continue;
 //                }
 
-//                // Обработка строковых литералов
 //                if (currentChar == '"')
 //                {
 //                    StringBuilder sb = new StringBuilder();
@@ -143,13 +136,10 @@
 //                    continue;
 //                }
 
-//                // Обработка операторов + и -
 //                if (currentChar == '+' || currentChar == '-')
 //                {
-//                    // Проверяем, является ли минус частью числа
 //                    if (currentChar == '-' && currentPos + 1 < input.Length && char.IsDigit(input[currentPos + 1]))
 //                    {
-//                        // Обрабатываем как число со знаком
 //                        StringBuilder sb = new StringBuilder();
 //                        int startPos = currentPos + 1;
 //                        sb.Append(currentChar);
@@ -171,7 +161,6 @@
 //                    }
 //                    else
 //                    {
-//                        // Обрабатываем как отдельный оператор
 //                        tokens.Add(new Token(
 //                            currentChar == '+' ? (int)TokenType.PlusOperator : (int)TokenType.MinusOperator,
 //                            currentChar == '+' ? "оператор +" : "оператор -",
@@ -184,27 +173,49 @@
 //                    continue;
 //                }
 
-//                // Обработка знака доллара
 //                if (currentChar == '$')
 //                {
-//                    tokens.Add(new Token(
-//                        (int)TokenType.DollarSign,
-//                        "знак доллара",
-//                        "$",
-//                        currentPos + 1,
-//                        currentPos + 1
-//                    ));
+//                    int startPos = currentPos + 1;
 //                    currentPos++;
+
+//                    if (currentPos < input.Length && IsLatinLetter(input[currentPos]))
+//                    {
+//                        StringBuilder sb = new StringBuilder();
+
+//                        while (currentPos < input.Length && (IsLatinLetterOrDigit(input[currentPos]) || input[currentPos] == '_'))
+//                        {
+//                            sb.Append(input[currentPos]);
+//                            currentPos++;
+//                        }
+
+//                        tokens.Add(new Token(
+//                            (int)TokenType.Identifier,
+//                            "идентификатор",
+//                            sb.ToString(),
+//                            startPos,
+//                            currentPos
+//                        ));
+//                        expectIdentifier = false;
+//                    }
+//                    else
+//                    {
+//                        tokens.Add(new Token(
+//                            (int)TokenType.InvalidChar,
+//                            "недопустимый символ после $",
+//                            "$",
+//                            startPos,
+//                            currentPos
+//                        ));
+//                    }
 //                    continue;
 //                }
 
-//                // Проверяем ключевые слова и идентификаторы
 //                if (char.IsLetter(currentChar) && IsLatinLetter(currentChar))
 //                {
 //                    StringBuilder sb = new StringBuilder();
 //                    int startPos = currentPos + 1;
 
-//                    while (currentPos < input.Length && (IsLatinLetterOrDigit(input[currentPos]) || input[currentPos] == '_'))
+//                    while (currentPos < input.Length && IsLatinLetter(input[currentPos]))
 //                    {
 //                        sb.Append(input[currentPos]);
 //                        currentPos++;
@@ -213,7 +224,57 @@
 //                    string word = sb.ToString();
 //                    int endPos = currentPos;
 
-//                    if (Keywords.TryGetValue(word, out TokenType keywordType))
+//                    bool isKeyword = Keywords.TryGetValue(word, out TokenType keywordType);
+
+//                    // Если ожидается идентификатор, но встретилось ключевое слово - считаем его идентификатором
+//                    if (expectIdentifier && isKeyword)
+//                    {
+//                        tokens.Add(new Token(
+//                            (int)TokenType.Identifier,
+//                            "идентификатор",
+//                            word,
+//                            startPos,
+//                            endPos
+//                        ));
+//                        expectIdentifier = false;
+//                        continue;
+//                    }
+
+//                    bool hasPartialKeyword = false;
+//                    foreach (var kw in Keywords.Keys)
+//                    {
+//                        if (word.StartsWith(kw) && word != kw && word.Length > kw.Length)
+//                        {
+//                            string keywordPart = kw;
+//                            string remainingPart = word.Substring(kw.Length);
+
+//                            tokens.Add(new Token(
+//                                (int)Keywords[kw],
+//                                Keywords[kw] == TokenType.StructKeyword ? "ключевое слово (struct)" : "ключевое слово типа",
+//                                keywordPart,
+//                                startPos,
+//                                startPos + kw.Length - 1
+//                            ));
+
+//                            tokens.Add(new Token(
+//                                (int)TokenType.InvalidChar,
+//                                "недопустимые символы",
+//                                remainingPart,
+//                                startPos + kw.Length,
+//                                endPos
+//                            ));
+
+//                            hasPartialKeyword = true;
+//                            break;
+//                        }
+//                    }
+
+//                    if (hasPartialKeyword)
+//                    {
+//                        continue;
+//                    }
+
+//                    if (isKeyword)
 //                    {
 //                        tokens.Add(new Token(
 //                            (int)keywordType,
@@ -222,6 +283,9 @@
 //                            startPos,
 //                            endPos
 //                        ));
+
+//                        // Устанавливаем флаг ожидания идентификатора после ключевого слова
+//                        expectIdentifier = true;
 //                    }
 //                    else
 //                    {
@@ -232,11 +296,11 @@
 //                            startPos,
 //                            endPos
 //                        ));
+//                        expectIdentifier = false;
 //                    }
 //                    continue;
 //                }
 
-//                // Проверяем числа без знака
 //                if (char.IsDigit(currentChar))
 //                {
 //                    StringBuilder sb = new StringBuilder();
@@ -258,7 +322,6 @@
 //                    continue;
 //                }
 
-//                // Проверяем специальные символы
 //                switch (currentChar)
 //                {
 //                    case '{':
@@ -290,16 +353,26 @@
 //                            currentPos + 1
 //                        ));
 //                        currentPos++;
+//                        expectIdentifier = false;
 //                        continue;
 //                    default:
 //                        if (IsCyrillic(currentChar))
 //                        {
+//                            StringBuilder sb = new StringBuilder();
+//                            int startPos = currentPos + 1;
+
+//                            while (currentPos < input.Length && IsCyrillic(input[currentPos]))
+//                            {
+//                                sb.Append(input[currentPos]);
+//                                currentPos++;
+//                            }
+
 //                            tokens.Add(new Token(
 //                                (int)TokenType.InvalidChar,
-//                                "недопустимый символ (русская буква)",
-//                                currentChar.ToString(),
-//                                currentPos + 1,
-//                                currentPos + 1
+//                                "недопустимые символы (русские буквы)",
+//                                sb.ToString(),
+//                                startPos,
+//                                currentPos
 //                            ));
 //                        }
 //                        else
@@ -311,8 +384,8 @@
 //                                currentPos + 1,
 //                                currentPos + 1
 //                            ));
+//                            currentPos++;
 //                        }
-//                        currentPos++;
 //                        continue;
 //                }
 //            }

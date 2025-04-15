@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace Лабораторная_1_компиляторы
 {
@@ -26,123 +27,6 @@ namespace Лабораторная_1_компиляторы
             //InitializeLineNumberPanel(); 
         }
 
-        //private void AnalyzeCode()
-        //{
-        //    dataGridView1.Rows.Clear(); // Очищаем таблицу перед новым анализом
-
-        //    string code = richTextBox1.Text;
-        //    if (string.IsNullOrEmpty(code))
-        //        return;
-
-        //    // Определяем шаблоны для лексем
-        //    var tokenPatterns = new Dictionary<string, string>
-        //    {
-        //        { "Keyword", @"\b(struct|string|int|bool|void|char|double|float|long|short|byte)\b" },
-        //        { "Identifier", @"\$?[a-zA-Z_][a-zA-Z0-9_]*" },
-        //        { "Integer", @"\b\d+\b" },
-        //        { "Operator", @"[+\-*/%=!<>]=?|&&|\|\||!" },
-        //        { "Separator", @"[(),;:.{}]" },
-        //        { "Whitespace", @"\s+" },
-        //        { "Assignment", @"=" },
-        //        { "Comment", @"//.*|/\*.*?\*/" },
-        //        { "StringLiteral", @"""[^""]*""|'[^']*'" }
-        //    };
-
-        //    // Общий шаблон для всех лексем
-        //    string allPatterns = string.Join("|", tokenPatterns.Values);
-        //    var regex = new Regex(allPatterns);
-
-        //    int lineNumber = 1;
-        //    int position = 0;
-
-        //    foreach (Match match in regex.Matches(code))
-        //    {
-        //        // Пропускаем пробелы и комментарии
-        //        if (Regex.IsMatch(match.Value, tokenPatterns["Whitespace"]))
-        //        {
-        //            position += match.Length;
-        //            // Учитываем переходы на новую строку
-        //            lineNumber += match.Value.Split('\n').Length - 1;
-        //            continue;
-        //        }
-        //        if (Regex.IsMatch(match.Value, tokenPatterns["Comment"]))
-        //        {
-        //            position += match.Length;
-        //            continue;
-        //        }
-
-        //        // Определяем тип лексемы
-        //        string tokenType = "Invalid";
-        //        int tokenCode = 0;
-
-        //        foreach (var pattern in tokenPatterns)
-        //        {
-        //            if (Regex.IsMatch(match.Value, $"^{pattern.Value}$") && pattern.Key != "Whitespace" && pattern.Key != "Comment")
-        //            {
-        //                tokenType = pattern.Key;
-        //                break;
-        //            }
-        //        }
-
-        //        // Устанавливаем условные коды для типов лексем
-        //        switch (tokenType)
-        //        {
-        //            case "Keyword":
-        //                tokenCode = 14;
-        //                break;
-        //            case "Identifier":
-        //                tokenCode = 2;
-        //                break;
-        //            case "Integer":
-        //                tokenCode = 1;
-        //                break;
-        //            case "Operator":
-        //                tokenCode = 12;
-        //                break;
-        //            case "Separator":
-        //                tokenCode = 16;
-        //                if (match.Value == ";") tokenCode = 16; // конец оператора
-        //                else if (match.Value == "{") tokenCode = 17; // начало блока
-        //                else if (match.Value == "}") tokenCode = 18; // конец блока
-        //                break;
-        //            case "Assignment":
-        //                tokenCode = 10;
-        //                break;
-        //            case "StringLiteral":
-        //                tokenCode = 3;
-        //                break;
-        //            default:
-        //                tokenCode = 99; // недопустимый символ
-        //                break;
-        //        }
-
-        //        // Добавляем строку в таблицу
-        //        dataGridView1.Rows.Add(
-        //            tokenCode,
-        //            GetRussianTokenType(tokenType),
-        //            match.Value,
-        //            $"Строка {lineNumber}, позиция {position + 1}-{position + match.Length}"
-        //        );
-
-        //        position += match.Length;
-        //    }
-        //}
-
-        //private string GetRussianTokenType(string englishType)
-        //{
-        //    switch (englishType)
-        //    {
-        //        case "Keyword": return "ключевое слово";
-        //        case "Identifier": return "идентификатор";
-        //        case "Integer": return "целое число";
-        //        case "Operator": return "оператор";
-        //        case "Separator": return "разделитель";
-        //        case "Assignment": return "оператор присваивания";
-        //        case "StringLiteral": return "строковый литерал";
-        //        case "Invalid": return "недопустимый символ";
-        //        default: return englishType;
-        //    }
-        //}
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -257,11 +141,6 @@ namespace Лабораторная_1_компиляторы
         private void pictureBox8_Click(object sender, EventArgs e)
         {
             richTextBox1.Copy();
-        }
-
-        private void pictureBox9_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void pictureBox10_Click(object sender, EventArgs e)
@@ -405,12 +284,21 @@ namespace Лабораторная_1_компиляторы
 
         private void пускToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            
             AnalyzeCode();
+            //CheckSyntax();
+        }
+
+        private void pictureBox9_Click(object sender, EventArgs e)
+        {
+            
+            AnalyzeCode();
+            //CheckSyntax();
         }
 
         private void AnalyzeCode()
         {
-            LexicalAnalyzer analyzer = new LexicalAnalyzer();
+            LexicalAnalyzer_2 analyzer = new LexicalAnalyzer_2();
             var tokens = analyzer.Analyze(richTextBox1.Text);
 
             StringBuilder result = new StringBuilder();
@@ -420,6 +308,33 @@ namespace Лабораторная_1_компиляторы
             }
 
             richTextBox2.Text = result.ToString();
+        }
+
+        private void CheckSyntax()
+        {
+            // Получаем текст из редактора
+            string code = richTextBox1.Text;
+
+            // Лексический анализ
+            var lexer = new LexicalAnalyzer();
+            var tokens = lexer.Analyze(code);
+
+            // Синтаксический анализ
+            var parser = new SyntaxAnalyzer();
+            var errors = parser.Analyze(tokens);
+
+            // Вывод результатов в richTextBox2
+            parser.PrintResultsToRichTextBox(errors, richTextBox2);
+
+            //// Дополнительная информация о структуре
+            //if (parser.IsStructCorrect(tokens))
+            //{
+            //    richTextBox2.AppendText("\n\nДополнительная проверка: структура объявлена корректно.");
+            //}
+            //else if (errors.Count == 0)
+            //{
+            //    richTextBox2.AppendText("\n\nДополнительная проверка: найдены проблемы в структуре (возможно, не хватает полей или скобки не сбалансированы).");
+            //}
         }
     }
 }
